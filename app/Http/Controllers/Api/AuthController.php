@@ -16,7 +16,6 @@ class AuthController extends Controller
     // Авторизация/регистрация
     public function login(Request $request)
     {
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255',
@@ -66,6 +65,7 @@ class AuthController extends Controller
                     'password' => Hash::make(Str::random(16)), // Генерируем случайный пароль
                     'verification_code' => $verificationCode,
                     'is_verified' => false,
+                    'is_admin' => false,
                     'ip_address' => $request->ip(),
                     'utm_source' => $request->input('utm_source'),
                     'utm_medium' => $request->input('utm_medium'),
@@ -84,6 +84,49 @@ class AuthController extends Controller
                 'email' => $user->email
             ]);
         }
+    }
+
+    // Авторизация администратора
+    public function adminLogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string',
+        ]);
+
+        // Пытаемся аутентифицировать пользователя
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Неверные учетные данные'
+            ], 401);
+        }
+
+        $user = Auth::user();
+
+        // Проверяем, что пользователь является администратором
+        if (!$user->is_admin) {
+            // Выходим из системы, если это не администратор
+            Auth::logout();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'У вас нет прав доступа к административной панели'
+            ], 403);
+        }
+
+        // Регистрируем посещение
+        $this->recordVisit($user, $request);
+
+        // Удаляем существующие токены и создаем новый
+        $user->tokens()->delete();
+        $token = $user->createToken('admin_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'user' => $user
+        ]);
     }
 
     // Верификация кода
@@ -167,7 +210,7 @@ class AuthController extends Controller
         $user->update(['verification_code' => $verificationCode]);
 
         // Отправляем email с новым кодом
-        Mail::to($user->email)->send(new VerificationCode($verificationCode));
+//        Mail::to($user->email)->send(new VerificationCode($verificationCode));
 
         return response()->json(['success' => true]);
     }
