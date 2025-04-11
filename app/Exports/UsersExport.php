@@ -5,47 +5,48 @@ use App\Models\User;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Illuminate\Http\Request;
 
-class UsersExport implements FromQuery, WithHeadings, WithMapping
+class UsersExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
 {
     protected $request;
 
-    public function __construct(Request $request)
+    public function __construct(Request $request = null)
     {
-        $this->request = $request;
+        $this->request = $request ?? new Request();
     }
 
     public function query()
     {
         $query = User::query()->where('is_admin', false);
 
-        // Применение фильтров
-        if ($this->request->has('email')) {
+        // Apply filters
+        if ($this->request->has('email') && !empty($this->request->email)) {
             $query->where('email', 'like', '%' . $this->request->email . '%');
         }
 
-        if ($this->request->has('phone')) {
+        if ($this->request->has('phone') && !empty($this->request->phone)) {
             $query->where('phone', 'like', '%' . $this->request->phone . '%');
         }
 
-        if ($this->request->has('is_verified')) {
-            $query->where('is_verified', $this->request->is_verified);
+        if ($this->request->has('is_verified') && $this->request->is_verified !== '' && $this->request->is_verified !== null) {
+            $query->where('is_verified', (int)$this->request->is_verified);
         }
 
-        if ($this->request->has('interest_type')) {
+        if ($this->request->has('interest_type') && !empty($this->request->interest_type)) {
             $query->where('interest_type', $this->request->interest_type);
         }
 
-        if ($this->request->has('date_from')) {
+        if ($this->request->has('date_from') && !empty($this->request->date_from)) {
             $query->whereDate('created_at', '>=', $this->request->date_from);
         }
 
-        if ($this->request->has('date_to')) {
+        if ($this->request->has('date_to') && !empty($this->request->date_to)) {
             $query->whereDate('created_at', '<=', $this->request->date_to);
         }
 
-        if ($this->request->has('utm_source')) {
+        if ($this->request->has('utm_source') && !empty($this->request->utm_source)) {
             $query->where('utm_source', 'like', '%' . $this->request->utm_source . '%');
         }
 
@@ -86,7 +87,7 @@ class UsersExport implements FromQuery, WithHeadings, WithMapping
             $user->utm_campaign,
             $user->utm_term,
             $user->utm_content,
-            $user->created_at->format('d.m.Y H:i:s'),
+            $user->created_at ? $user->created_at->format('d.m.Y H:i:s') : '',
         ];
     }
 }

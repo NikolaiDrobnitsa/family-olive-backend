@@ -87,10 +87,23 @@ class UserController extends Controller
     public function export(Request $request)
     {
         try {
-            return Excel::download(new UsersExport($request), 'users.xlsx');
+            $filename = 'users_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+            // Log the export attempt for debugging
+            Log::info('Starting user export with request parameters: ' . json_encode($request->all()));
+
+            return Excel::download(new UsersExport($request), $filename);
         } catch (\Exception $e) {
             Log::error('Export error: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Export failed'], 500);
+            Log::error($e->getTraceAsString());
+
+            // For API requests, return JSON error
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Export failed: ' . $e->getMessage()], 500);
+            }
+
+            // For web requests, redirect back with error
+            return back()->withErrors(['export' => 'Export failed: ' . $e->getMessage()]);
         }
     }
 

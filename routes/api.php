@@ -49,9 +49,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Пользователи
         Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/export', [UserController::class, 'export']);
         Route::get('/users/{id}', [UserController::class, 'show']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
-        Route::get('/users/export', [UserController::class, 'export']);
         Route::get('/users/{id}/survey-responses', [UserController::class, 'getSurveyResponses']);
         Route::get('/users/{id}/visits', [UserController::class, 'getVisits']);
 
