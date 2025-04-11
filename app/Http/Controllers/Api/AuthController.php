@@ -16,6 +16,7 @@ class AuthController extends Controller
     // Авторизация/регистрация
     public function login(Request $request)
     {
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255',
@@ -75,7 +76,7 @@ class AuthController extends Controller
             }
 
             // Отправляем email с кодом верификации
-            Mail::to($user->email)->send(new VerificationCode($verificationCode));
+//            Mail::to($user->email)->send(new VerificationCode($verificationCode));
 
             return response()->json([
                 'success' => true,

@@ -15,12 +15,12 @@ use App\Http\Controllers\Admin\SettingController;
 */
 
 // Маршруты авторизации
-Route::get('/auth/login', [CustomAuthController::class, 'showLoginForm'])->name('auth.login');
-Route::post('/auth/login', [CustomAuthController::class, 'login']);
-Route::post('/auth/verify', [CustomAuthController::class, 'verifyCode']);
-Route::post('/auth/resend-code', [CustomAuthController::class, 'resendCode']);
-Route::post('/auth/logout', [CustomAuthController::class, 'logout'])->name('auth.logout');
-Route::get('/auth/check', [CustomAuthController::class, 'checkAuth'])->name('auth.check');
+//Route::get('/auth/login', [CustomAuthController::class, 'showLoginForm'])->name('auth.login');
+//Route::post('/auth/login', [CustomAuthController::class, 'login']);
+//Route::post('/auth/verify', [CustomAuthController::class, 'verifyCode']);
+//Route::post('/auth/resend-code', [CustomAuthController::class, 'resendCode']);
+//Route::post('/auth/logout', [CustomAuthController::class, 'logout'])->name('auth.logout');
+//Route::get('/auth/check', [CustomAuthController::class, 'checkAuth'])->name('auth.check');
 
 // Маршруты административной панели
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
